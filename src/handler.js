@@ -1,19 +1,16 @@
-const request = require('http-as-promised').defaults({
-  json: true,
-  resolve: 'body'
-})
+export function handler ({ payload }, request, done) {
+  const { record: { id, apiName }, priorState, changeSet } = payload
+  const wasNameChanged = 'first_name' in changeSet || 'last_name' in changeSet
+  if (!wasNameChanged) return done(null, 'No name change')
 
-export function handler (event, context) {
-  const { jwt, contents: { recordId, recordType, toStage } } = event
-  const { succeed, fail } = context
-  const advancing = {
-    third: 0.25,
-    forth: 0.50,
-    fifth: 0.75,
-    sixth: 1.00
-  }
-  request.patch(`https://gateway.lanetix.com/v1/records/${recordType}/${recordId}`, {
-    auth: { bearer: jwt },
-    body: { chance_to_win: advancing[toStage] }
-  }).then(succeed).catch(fail)
+  const { first_name, last_name } = { ...priorState, ...changeSet }
+  const name = `${first_name} ${last_name}`.trim() || 'Unnamed Contact'
+
+  console.log(`Changing name from "${priorState.name}" to "${name}" with post to /v1/records/${apiName}/${id}.`)
+
+  return request({
+    method: 'PATCH',
+    path: `/v1/records/${apiName}/${id}`,
+    body: { name }
+  }, done)
 }
