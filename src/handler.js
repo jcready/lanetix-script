@@ -6,7 +6,7 @@ export function handler ({ payload, request }, done) {
   const { first_name, last_name } = { ...priorState, ...changeSet }
   const name = `${first_name} ${last_name}`.trim() || 'Unnamed Contact'
 
-  console.log(`Changing name from "${priorState.name}" to "${name}" with post to /v1/records/${apiName}/${id}.`)
+  console.log(`Changing from "${priorState.name}" to "${name}" with post to /v1/records/${apiName}/${id}.`)
 
   return request({
     method: 'PATCH',
